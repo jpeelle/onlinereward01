@@ -1,0 +1,139 @@
+---
+title: "1_DataCleaning_RewardOnline"
+author: "Austin Luor"
+date: "7/2/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This is the analysis r-markdown to online version of reward money using Gorilla.sc. 
+#Scoring data
+##Setting up Environment
+```{r, warning= FALSE, echo=FALSE, eval=FALSE}
+library(ggplot2)
+library(dplyr)
+library(ggpubr)
+library(ggridges)
+library(tidyr)
+library(forcats)
+library(patchwork)
+remotes::install_github("autoscore/autoscore"); library(autoscore)
+
+
+#Downloaded from gorilla as raw data. Old is version 9 (n=10), new is version 10 (n=40). This can be found in the data folder in online reward projects. 
+old <- read.csv("/Users/austinluor/Box/PeelleLab/research_projects/201901083_onlineReward01/shared/data/data_exp_14612-v9_task-55ha.csv")
+new <- read.csv("/Users/austinluor/Box/PeelleLab/research_projects/201901083_onlineReward01/shared/data/data_exp_14612-v10_task-55ha.csv")
+
+#Combine both dataframe into one data. 
+data <- rbind(old, new)
+
+#Trim the dataframe to have the right columns 
+#This removes those rows that have "No source sound files".
+data <- filter(.data=data, complete.cases(data$Reaction.Time))
+
+#Trim the dataframe to have the right columns 
+data<- data[,c(12,29,37,45,48,49,53,54)]
+
+#Filter by the complete cases of response
+data <- filter(.data=data, complete.cases(data$Response))
+
+#Filter by the complete cases of randomise_block (To remove the practice trials and those who have loading delays)
+data <- filter(.data=data, complete.cases(data$randomise_blocks))
+
+
+#Filter by the complete cases of response
+Response <- seq(3, nrow(data), 4)
+data<- data[Response,]
+
+
+#For those that have loading delays, it is likely that their trial will rerun resulting in duplicate trial numbers. This attempts to remove rows that have duplicated row trial numbers. 
+data <-data[with(data, c(data$Trial.Number[-1]!= data$Trial.Number[-nrow(data)], TRUE)),]
+```
+
+
+###Preprocessing for Autoscore
+
+This section of the code uses the R package: Autoscore. In order to use this package, you will have to change the format of your dataframe that is compartible to use the Autoscore pacakge online. 
+
+The order of procedures:
+1. Shorten the dataframe to: ID, trial number, response, target,...)
+2. For the target column, remove all the "the", "a", or remove everything that is not captialize
+3. Export it to csv.
+
+
+```{r, echo=FALSE, eval=FALSE}
+#Shorten the dataframe to the columns that I need
+data <- data[,c(1:3,8)]
+
+#Change the column name to match Autoscore format
+names(data)[1] <- "id"
+names(data)[4] <- "target"
+
+#Remove the T in the target column
+data$target <- gsub("The", "the", data$target)
+
+#Replacing Gray with Gray and Grey so it will take count both spelling as correct
+data$target <- gsub("GRAY", "GRAY GREY", data$target)
+
+
+#Remove everything that is not capitalize in the target column.
+data$target <- gsub("[a-z]", "", data$target)
+
+#Removing extra white spaces so autoscore package can score accurately. 
+data$target <- gsub("\\s+"," ", data$target)
+
+
+#Add another row noting the reward cue for each subject
+data$RewardCue <- "0"
+data$RewardCue[data$Trial.Number == c(17:20, 37:40, 57:60, 77:80)] <- "$$$"
+
+#Use Autoscore package to score
+data <- autoscore(data)
+
+```
+
+
+###All Data Summary
+You can analyze more than one subject on autoscore and it will spit out a meta data file with all of your data analyzed. You will be able to see how each of your participant's performance based on the ID column. 
+
+
+```{r, warning=FALSE, echo=FALSE}
+#Calculate how much each participant gets for the reward trials. Since there are 4 target words in each sentence, each word correct is counted for 15.625 cents. The total will be rounded. 
+#Create a new column called cents and place 0 for every cell
+data$cents <- 0
+
+#For every cell that is a reward trial, write in 15.626 cents
+data$cents[data$rewardcue != "0"] <- 15.625
+
+#Multiply the 15.625 cents to the number of words answered correctly 
+data$cents <- data$cents * data$autoscore
+
+
+#Add another Participant ID number to the prolific/gorilla ID. Make sure to change the 1:n by how many participants we have
+#Renaming the Px ID Column to 001~100
+data$ParticipantID <- NA
+for (i in unique(data$ParticipantID)) {
+  data$ParticipantID <- rep(1:50, each=80)
+}
+
+
+#Reclassifying variables
+data$id <- as.factor(data$id)
+data$ParticipantID <- as.character(data$ParticipantID)
+data$autoscore <- as.numeric(data$autoscore)
+data$cents <- as.numeric(data$cents)
+
+#Convert autoscore column into percentages/If you want to keep this as 1~4, don't run this line.
+data$autoscore <- data$autoscore * 25
+
+#Rearranging Participant ID column
+data <- data[,c(8,1:7)]
+
+#######CHECK POINT######
+#This export all participant's raw data/responses, autoscore, reward trials for plotting and modeling purposes.
+write.csv(data, "/Users/PATH/alldatasummary.csv")
+
+```
