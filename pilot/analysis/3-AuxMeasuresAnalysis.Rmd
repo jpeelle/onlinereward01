@@ -1,0 +1,240 @@
+---
+title: "AuxMeasuresAnalysis"
+author: ""
+date: "6/22/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Setting up the environment to have the frist two columns of the all data summary. 
+```{r}
+library(readr)
+library(car)
+
+#Still need to put my data in this file...
+alldatasummary<-read_csv("C:/Users/mcmul/Desktop/alldatasummary.csv")
+View(alldatasummary)
+
+```
+
+```{r}
+
+# Sleep Quality: This is still messed up. I am having issues scoring one of the components.
+
+sleep <- read_csv("C:/Users/mcmul/Desktop/Sleep.csv")
+View (sleep)
+
+## Scoring Instructions
+### Component 1: Q9 is scored 0 - 3; Component 2: Q2 is scored (≤15min=0; 16-30 min=1; 31-60 min=2, >60 min=3) + #5a--if sum is equal 0=0; 1-2=1; 3-4=2; 5-6=3; Component 3: #4 score (>7=0; 6-7=1; 5-6=2; <5=3); Component 4: total # hours slept/total # hours in bed * 100 (>85%=0, 75%-84%=1, 65%-74%=2, <65%=3); Component 5: Sum of scores #5b - #5j (0=0; 1-9=1; 10-18=2; 19-27=3); Componenet 6: #6 score; Component 7: #7 score + #8 score (0=0, 1-2 = 1, 3-4 = 2, 5-6=3). Add all 7 components togeether for final score
+
+## This scoring is a pain.
+
+  ###Component 1###
+  sleep$Comp1 <- sleep$Sleep9 - 1
+  
+  ###Component 2###
+  Score2 <- rep(NA,nrow(sleep))
+  Score2[sleep$Sleep2<=15] <- 0
+  Score2[sleep$Sleep2>15 & sleep$Sleep2<=30] <- 1
+  Score2[sleep$Sleep2>30 & sleep$Sleep2<=60] <- 2
+  Score2[sleep$Sleep2>60] <- 3
+  
+  Score_Comp2 <- Score2 + sleep$Sleep5a - 1
+  
+  sleep$Comp2[Score_Comp2==0] <- 0
+  sleep$Comp2[Score_Comp2==1 | Score_Comp2==2] <- 1
+  sleep$Comp2[Score_Comp2==3 | Score_Comp2==4] <- 2
+  sleep$Comp2[Score_Comp2==5 | Score_Comp2==6] <- 3
+  
+  ###Component 3###
+  sleep$Comp3[sleep$Sleep4>=7] <- 0
+  sleep$Comp3[sleep$Sleep4>=6 & sleep$Sleep4<7] <- 1
+  sleep$Comp3[sleep$Sleep4>=5 & sleep$Sleep4<6] <- 2
+  sleep$Comp3[sleep$Sleep4<5] <- 3
+  
+  ###Component 4### HAVING DIFFICULTY CALCULATING THIS DUE TO ISSUES WITH HOURS AND MINUTES
+  ### Find a different way to calculate this? Or set it up differently in Gorilla so it is one variable in 24 hours format?
+  Hours_in_Bed<- as.numeric(difftime(strptime(sleep$Sleep3, "%I:%M %p" ),strptime(sleep$Sleep1, "%I:%M %p" ),units='hours'))
+  Hours_in_Bed[!is.na(Hours_in_Bed) & Hours_in_Bed<0] <- 24 + Hours_in_Bed[!is.na(Hours_in_Bed) & Hours_in_Bed<0] 
+  
+  Score_Comp4 <- rep(NA,nrow(sleep))
+  Score_Comp4 <- sleep$Sleep4/Hours_in_Bed*100
+  sleep$Comp4[Score_Comp4 >= 85] <- 0
+  sleep$Comp4[Score_Comp4 >= 75 & Score_Comp4 < 85] <- 1
+  sleep$Comp4[Score_Comp4 >= 65 & Score_Comp4 < 75] <- 2
+  sleep$Comp4[Score_Comp4 < 65] <- 3
+  
+  ###Component 5### Check that questionnaire is asking Sleep5j?
+  sleep$Sleep5j[is.na(sleep$Sleep5j) | sleep$Sleep5j==""] <- 1
+  Score_Comp5 <- sleep$Sleep5b + sleep$Sleep5c + sleep$Sleep5d + sleep$Sleep5e + sleep$Sleep5f + sleep$Sleep5g + sleep$Sleep5h + sleep$Sleep5i + sleep$Sleep5j- 9
+  sleep$Comp5[Score_Comp5 == 0] <- 0
+  sleep$Comp5[Score_Comp5 >= 1 & Score_Comp5 <= 9] <- 1
+  sleep$Comp5[Score_Comp5 >= 10 & Score_Comp5 <= 18] <- 2
+  sleep$Comp5[Score_Comp5 >= 19 & Score_Comp5 <= 27] <- 3
+  
+  ###Component 6###
+  sleep$Comp6 <- sleep$Sleep6 - 1
+  
+  ###Component 7###
+  Score_Comp7 <- sleep$Sleep7 - 1 + sleep$Sleep8 - 1
+  sleep$Comp7[Score_Comp7==0] <- 0
+  sleep$Comp7[Score_Comp7==1 | Score_Comp7==2] <- 1
+  sleep$Comp7[Score_Comp7==3 | Score_Comp7==4] <- 2
+  sleep$Comp7[Score_Comp7==5 | Score_Comp7==6] <- 3
+  
+  sleep$PSQI <- sleep$Comp1 + sleep$Comp2 + sleep$Comp3 + sleep$Comp4 + sleep$Comp5 + sleep$Comp6 + sleep$Comp7
+
+  View(sleep)
+
+```
+
+```{r}
+
+# Stress: The average scores for event load and personal vulerability are the main stress variables
+
+stress <- read_csv("C:/Users/mcmul/Desktop/Stress.csv")
+View (stress)
+
+## Calculate personal vulnerability score (inadequate, confident, get ahead, odds, cope, poweless, control, gowrong, worse, giving up)
+stress$stressPV <- (stress$inadequate+stress$confident+stress$GettingAhead+stress$OddsAgainst+stress$Cope+stress$powerless+stress$NoControl+stress$Wrong+stress$Worse+stress$GivingUp)/10
+
+## Calculate Event Load score (strain, overext, swamped, enough time, rushed, on mind, overcomm, piling up, breathe, heavy laod, too much too little)
+stress$stressEV <- (stress$strained+stress$overextended+stress$Swamped+stress$LackTime+stress$Rushed+stress$LotMind+stress$overcommitted+stress$PilingUp+stress$Breathe+stress$HeavyLoad+stress$LittleTime)/11
+
+## Doublecheck to make sure two new variables are created in df
+View(stress)
+
+## Use the two different subscale scores for analyses.
+
+```
+
+
+```{r}
+
+# Resiliency
+
+resiliency <- read_csv("C:/Users/mcmul/Desktop/resiliency.csv")
+View(resiliency)
+
+## Reverse code 2, 4, 6
+resiliency$Q2r = recode(resiliency$Q2, "1=5; 2=4; 4=2; 5=1")
+resiliency$Q4r = recode(resiliency$Q4, "1=5; 2=4; 4=2; 5=1")
+resiliency$Q6r = recode(resiliency$Q6, "1=5; 2=4; 4=2; 5=1")
+View(resiliency)
+
+## Calculate score: Use this score for analyses
+resiliency$resiliencyscore <- (resiliency$Q1 + resiliency$Q2r + resiliency$Q3 + resiliency$Q4r + resiliency$Q5 + resiliency$Q6r)/6
+
+## Doublecheck to make sure score in spreadsheet
+View(resiliency)
+
+```
+
+
+```{r}
+
+# PANAS-X
+
+## cheerful	attentive	bashful	sluggish	daring	surprised	strong	scornful	relaxed	irritable	delighted	inspired	fearless	disgusted	sad	calm	afraid	tired	amazed	shaky	happy	timid	alone	alert	upset	angry	bold	blue	shy	active	guilty	joyful	nervous	lonely	sleepy	exctied	hostile	proud	jittery	lively	ashamed	atease	scared	drowsy	angryself	enthusiastic	downhearted	sheepish	distressed	blameworthy	determined	frightened	astonished	interested	loathing	confident	energetic	concentrating	dissatistfiedself
+
+panas <- read_csv("C:/Users/mcmul/Desktop/panas.csv")
+View(panas)
+
+panas$GenNegAff <- (panas$afraid+
+              panas$scared+
+              panas$nervous+
+              panas$jittery+
+              panas$guilty+
+              panas$ashamed+
+              panas$irritable+
+              panas$hostile+
+              panas$upset+
+              panas$distressed)/10
+
+panas$Fear <- (panas$afraid+
+                 panas$scared+
+                 panas$frightened+
+                 panas$nervous+
+                 panas$jittery+
+                 panas$shaky)/6
+
+panas$Sadness <- (panas$sad+
+                    panas$blue+
+                    panas$downhearted+
+                    panas$alone+
+                    panas$lonely)/5
+
+panas$Guilt <- (panas$guilty+
+                  panas$ashamed+
+                  panas$blameworthy+
+                  panas$angryself+
+                  panas$dissatistfiedself)/5
+
+panas$Hostility <- (panas$angry+
+                      panas$irritable+
+                      panas$hostile+
+                      panas$scornful+
+                      panas$disgusted+
+                      panas$loathing)/6
+
+panas$Shyness <- (panas$shy+
+                    panas$bashful+
+                    panas$sheepish+
+                    panas$timid)/4
+
+panas$Fatigue <- (panas$sleepy+
+                    panas$tired+
+                    panas$sluggish+
+                    panas$drowsy)/4
+
+panas$GenPosAff <- (panas$active+
+                      panas$alert+
+                      panas$attentive+
+                      panas$enthusiastic+
+                      panas$exctied+
+                      panas$inspired+
+                      panas$interested+
+                      panas$proud+
+                      panas$strong+
+                      panas$determined)/10
+
+panas$Joviality <- (panas$cheerful+
+                      panas$happy+
+                      panas$joyful+
+                      panas$delighted+
+                      panas$enthusiastic+
+                      panas$exctied+
+                      panas$lively+
+                      panas$energetic)/8
+
+panas$SelfAssure<- (panas$proud+
+                      panas$strong+
+                      panas$confident+
+                      panas$bold+
+                      panas$fearless+
+                      panas$daring)/6
+
+panas$AttentiveTot <- (panas$alert+
+                      panas$attentive+
+                      panas$concentrating+
+                      panas$determined)/4
+
+panas$Serenity <- (panas$calm+
+                     panas$relaxed+
+                     panas$atease)/3
+
+panas$SurpriseTot <- (panas$surprised+
+                        panas$amazed+
+                        panas$astonished)/3
+
+View(panas)
+
+## People typically use the GenNegAff and GenPosAff subscales, but we can explore the others.
+
+```
+
+
+
