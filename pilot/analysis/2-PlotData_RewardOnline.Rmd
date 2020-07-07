@@ -1,0 +1,281 @@
+---
+title: "2-PlotData_RewardOnline"
+author: "Austin Luor"
+date: "7/5/2020"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+This is the analysis r-markdown to online version of reward money using Gorilla.sc. 
+#Scoring data
+##Setting up Environment
+```{r, warning= FALSE, echo=FALSE, eval=FALSE}
+library(ggplot2)
+library(dplyr)
+library(ggpubr)
+library(ggridges)
+library(tidyr)
+library(forcats)
+library(patchwork)
+
+plotdata <- read.csv("/Users/austinluor/Box/PeelleLab/research_projects/201901083_onlineReward01/shared/onlinereward01_data-analysis/pilot/data/alldatasummary.csv")
+
+
+
+```
+
+
+#Plotting by trials
+
+
+```{r, warning = FALSE, echo=FALSE}
+#First Data Frame
+
+plotdata <- read.csv("/Users/austinluor/Box/PeelleLab/research_projects/201901083_onlineReward01/shared/onlinereward01_data-analysis/pilot/data/alldatasummary.csv")
+
+averagefortrials <- NA
+trial <- c(1:80)
+block <- rep(1:20, each=4)
+fortrials <- data.frame(averagefortrials, trial, block, stringsAsFactors=FALSE)
+
+for (i in unique(plotdata$trial.number)){
+ fortrials[i,1]<-mean(plotdata$autoscore[plotdata$trial.number == i])
+}
+
+
+# #Line graph for all participants as a function of trials; could also add vertical shapdes to show where the reward trials are
+  library(ggplot2)
+
+#pdf("/Users/austinluor/Desktop/allTrialsAverage")
+ggplot(fortrials, aes(x=trial, y=averagefortrials)) +
+  #geom_smooth(aes(y=fortrials$averagefortrial), se=TRUE, color="#00BFC4") +
+  geom_line(aes(y=averagefortrials),color="#758BFD") +
+  theme_classic() +
+  scale_y_continuous(breaks = c(0, 25, 50, 75, 100), limits = c(-10,110)) +
+  labs(label = 'percent') +
+  labs(x='Trials', y='Accuracy (% correct)', title = "Average accuracy of each trial for all 50 participants") +
+  annotate("rect", xmin = 17, xmax = 20, ymin = -10, ymax = 100, alpha = .2) +
+  annotate("rect", xmin = 37, xmax = 40, ymin = -10, ymax = 100, alpha = .2) +
+  annotate("rect", xmin = 57, xmax = 60, ymin = -10, ymax = 100, alpha = .2) +
+  annotate("rect", xmin = 77, xmax = 80, ymin = -10, ymax = 100, alpha = .2)
+
+#dev.off()
+
+```
+
+#Plotting by Blocks of 20 (ORDER)
+
+
+
+```{r, warning=FALSE}
+blockorder <- c(1:20)
+avgfor_blockorder <- NA
+# blockidentity <- NA
+# avgfor_blockidentity <- NA
+forblocks <- data.frame(blockorder, avgfor_blockorder,stringsAsFactors=FALSE)
+
+
+for (i in fortrials$block){
+  if (i == 1){
+    forblocks[1,2]<-mean(fortrials$averagefortrials[fortrials$block == i])
+  }
+  if (i == 2){
+    forblocks[2,2]<-mean(fortrials$averagefortrials[fortrials$block == i])
+  }
+  if (i == 3){
+    forblocks[3,2]<-mean(fortrials$averagefortrials[fortrials$block == i])
+  }
+  if (i == 4){
+    forblocks[4,2]<-mean(fortrials$averagefortrials[fortrials$block == i])
+  }
+  if (i == 5){
+    forblocks[5,2]<-mean(fortrials$averagefortrials[fortrials$block == i])
+  }
+  if (i == 6){
+    forblocks[6,2]<-mean(fortrials$averagefortrials[fortrials$block == i])
+  }
+  if (i == 7){
+    forblocks[7,2]<-mean(fortrials$averagefortrials[fortrials$block == i])
+  }
+  if (i == 8){
+    forblocks[8,2]<-mean(fortrials$averagefortrials[fortrials$block == i])
+  }
+  if (i == 9){
+    forblocks[9,2]<-mean(fortrials$averagefortrials[fortrials$block == i])
+  }
+  if (i == 10){
+    forblocks[10,2]<-mean(fortrials$averagefortrials[fortrials$block == i])
+  }
+  if (i == 11){
+    forblocks[11,2]<-mean(fortrials$averagefortrials[fortrials$block == i])
+  }
+  if (i == 12){
+    forblocks[12,2]<-mean(fortrials$averagefortrials[fortrials$block == i])
+  }
+  if (i == 13){
+    forblocks[13,2]<-mean(fortrials$averagefortrials[fortrials$block == i])
+  }
+  if (i == 14){
+    forblocks[14,2]<-mean(fortrials$averagefortrials[fortrials$block == i])
+  }
+  if (i == 15){
+    forblocks[15,2]<-mean(fortrials$averagefortrials[fortrials$block == i])
+  }
+  if (i == 16){
+    forblocks[16,2]<-mean(fortrials$averagefortrials[fortrials$block == i])
+  }
+  if (i == 17){
+    forblocks[17,2]<-mean(fortrials$averagefortrials[fortrials$block == i])
+  }
+  if (i == 18){
+    forblocks[18,2]<-mean(fortrials$averagefortrials[fortrials$block == i])
+  }
+  if (i == 19){
+    forblocks[19,2]<-mean(fortrials$averagefortrials[fortrials$block == i])
+  }
+  if (i == 20){
+    forblocks[20,2]<-mean(fortrials$averagefortrials[fortrials$block == i])
+   }
+  
+}
+
+
+
+
+#Average of Average
+ggplot(forblocks, aes(x=blockorder, y=avgfor_blockorder)) +
+  #geom_smooth(aes(y=fortrials$averagefortrial), se=TRUE, color="#00BFC4") +
+  geom_line(aes(y=avgfor_blockorder),color="#758BFD", size=1.5, alpha=0.9) +
+  geom_point() +
+  geom_abline(intercept = 50, slope = 0, color= "red", linetype="dashed") +
+  theme_classic() +
+  scale_y_continuous(breaks = c(0, 25, 50, 75, 100), limits = c(-10,110)) +
+  labs(label = 'percent') +
+  labs(x='Blocks', y='Accuracy (% correct)', title = "Average accuracy of block order (sequence)")
+
+
+```
+
+
+#Plotting by Blocks of 20 (IDENTITY)
+
+
+
+```{r}
+forblocks$avgfor_blockidentity <- NA
+
+for (i in plotdata$randomise_blocks){
+  if (i == 1){
+    forblocks[1,3]<-mean(plotdata$autoscore[plotdata$randomise_blocks == i])
+  }
+  if (i == 2){
+    forblocks[2,3]<-mean(plotdata$autoscore[plotdata$randomise_blocks == i])
+  }
+  if (i == 3){
+    forblocks[3,3]<-mean(plotdata$autoscore[plotdata$randomise_blocks == i])
+  }
+  if (i == 4){
+    forblocks[4,3]<-mean(plotdata$autoscore[plotdata$randomise_blocks == i])
+  }
+  if (i == 5){
+    forblocks[5,3]<-mean(plotdata$autoscore[plotdata$randomise_blocks == i])
+  }
+  if (i == 6){
+    forblocks[6,3]<-mean(plotdata$autoscore[plotdata$randomise_blocks == i])
+  }
+  if (i == 7){
+    forblocks[7,3]<-mean(plotdata$autoscore[plotdata$randomise_blocks == i])
+  }
+  if (i == 8){
+    forblocks[8,3]<-mean(plotdata$autoscore[plotdata$randomise_blocks == i])
+  }
+  if (i == 9){
+    forblocks[9,3]<-mean(plotdata$autoscore[plotdata$randomise_blocks == i])
+  }
+  if (i == 10){
+    forblocks[10,3]<-mean(plotdata$autoscore[plotdata$randomise_blocks == i])
+  }
+  if (i == 11){
+    forblocks[11,3]<-mean(plotdata$autoscore[plotdata$randomise_blocks == i])
+  }
+  if (i == 12){
+    forblocks[12,3]<-mean(plotdata$autoscore[plotdata$randomise_blocks == i])
+  }
+  if (i == 13){
+    forblocks[13,3]<-mean(plotdata$autoscore[plotdata$randomise_blocks == i])
+  }
+  if (i == 14){
+    forblocks[14,3]<-mean(plotdata$autoscore[plotdata$randomise_blocks == i])
+  }
+  if (i == 15){
+    forblocks[15,3]<-mean(plotdata$autoscore[plotdata$randomise_blocks == i])
+  }
+  if (i == 16){
+    forblocks[16,3]<-mean(plotdata$autoscore[plotdata$randomise_blocks == i])
+  }
+  if (i == 17){
+    forblocks[17,3]<-mean(plotdata$autoscore[plotdata$randomise_blocks == i])
+  }
+  if (i == 18){
+    forblocks[18,3]<-mean(plotdata$autoscore[plotdata$randomise_blocks == i])
+  }
+  if (i == 19){
+    forblocks[19,3]<-mean(plotdata$autoscore[plotdata$randomise_blocks == i])
+  }
+  if (i == 20){
+    forblocks[20,3]<-mean(plotdata$autoscore[plotdata$randomise_blocks == i])
+   }
+  
+}
+
+
+
+#Average block identity
+ggplot(forblocks, aes(x=blockorder, y=avgfor_blockidentity)) +
+  #geom_smooth(aes(y=fortrials$averagefortrial), se=TRUE, color="#00BFC4") +
+  geom_line(aes(y=avgfor_blockidentity),color="#758BFD", size=1.5, alpha=0.9) +
+  geom_point() +
+  geom_abline(intercept = 50, slope = 0, color= "red", linetype="dashed") +
+  theme_classic() +
+  scale_y_continuous(breaks = c(0, 25, 50, 75, 100), limits = c(-10,110)) +
+  labs(label = 'percent') +
+  labs(x='Unique Blocks', y='Accuracy (% correct)', title = "Average accuracy of block identity")
+
+
+```
+
+#How well do listeners perform from the first non reward block 
+Changing it to long format
+
+```{r}
+ID <- c(1:50)
+noreward <- NA
+reward <- NA
+first5blocks <- NA
+second5blocks <- NA
+third5blocks <- NA
+forth5blocks <- NA
+average.data <- data.frame(ID, noreward, reward, first5blocks, second5blocks,third5blocks,forth5blocks, stringsAsFactors=FALSE)
+
+#
+for (i in unique(plotdata$ParticipantID)) {
+  average.data[i, 2] <- mean(plotdata$autoscore[plotdata$ParticipantID == i & plotdata$rewardcue =="0"])
+  average.data[i, 3] <- mean(plotdata$autoscore[plotdata$ParticipantID == i & plotdata$rewardcue =="$$$"])
+  average.data[i, 4] <- mean(plotdata$autoscore[plotdata$ParticipantID == i & plotdata$trial.number == 1:20])
+  average.data[i, 5] <- mean(plotdata$autoscore[plotdata$ParticipantID == i & plotdata$trial.number == 21:40])
+  average.data[i, 6] <- mean(plotdata$autoscore[plotdata$ParticipantID == i & plotdata$trial.number == 41:60])
+  average.data[i, 7] <- mean(plotdata$autoscore[plotdata$ParticipantID == i & plotdata$trial.number == 61:80])
+  #average.data[i, 4] <- (sum(data$cents[data$id == i & data$rewardcue =="$$$"])/100)
+}
+
+for (i in unique(average.data$ParticipantID)) {
+  average.data[i, 8] <- rowMeans(average.data$second5blocks[average.data$ParticipantID == i], average.data$third5blocks[average.data$ParticipantID == i], average.data$forth5blocks[average.data$ParticipantID == i], na.rm=TRUE)
+}
+
+```
+

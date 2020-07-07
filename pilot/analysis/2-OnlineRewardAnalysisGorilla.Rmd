@@ -27,12 +27,12 @@ library(patchwork)
 #data <- readxl::read_xlsx("/Users/austinluor/Desktop/data_exp_14612-v10_task-55ha.xlsx")
 
 #data <- readxl::read_xlsx("/Users/austinluor/Desktop/Errorfiles.xlsx")
-old <- readxl::read_xlsx("/Users/austinluor/Desktop/data_exp_14612-v9_task-55ha_old10.xlsx")
-new <- readxl::read_xlsx("/Users/austinluor/Desktop/data_exp_14612-v10_task-55hanew40.xlsx")
+old <- readxl::read_xlsx("/Users/austinluor/Desktop/Online_Reward/data_exp_14612-v9_task-55ha.xlsx")
+new <- readxl::read_xlsx("/Users/austinluor/Desktop/Online_Reward/data_exp_14612-v10_task-55ha.xlsx")
 
 data <- rbind(old, new)
 
-write.csv(data, "/Users/austinluor/Desktop/alldataraw.csv")
+#write.csv(data, "/Users/austinluor/Desktop/alldataraw.csv")
 #Trim the dataframe to have the right columns 
 #data <- data[,-c(1:10)]
 
