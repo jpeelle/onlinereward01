@@ -74,11 +74,12 @@ The order of procedures:
 
 ```{r, echo=FALSE, eval=FALSE}
 #Shorten the dataframe to the columns that I need. Added to include randomized blocks in code. 
-data <- data[,c(1:4,8)]
+data <- data[,c(1:4,6:8)]
 
 #Change the column name to match Autoscore format
 names(data)[1] <- "id"
-names(data)[5] <- "target"
+names(data)[2] <- "trial_number"
+names(data)[7] <- "target"
 
 #Remove the T in the target column
 data$target <- gsub("The", "the", data$target)
@@ -96,7 +97,7 @@ data$target <- gsub("\\s+"," ", data$target)
 
 #Add another row noting the reward cue for each subject
 data$RewardCue <- "0"
-data$RewardCue[data$`Trial Number` == c(17:20, 37:40, 57:60, 77:80)] <- "$$$"
+data$RewardCue[data$trial_number == c(17:20, 37:40, 57:60, 77:80)] <- "$$$"
 
 #Use Autoscore package to score
 data <- autoscore(data)
@@ -138,7 +139,10 @@ data$cents <- as.numeric(data$cents)
 data$autoscore <- data$autoscore * 25
 
 #Rearranging Participant ID column
-data <- data[,c(9,1:8)]
+data <- data[,c(11,1:10)]
+
+#Renaming the autoscore column into accuracy
+names(data)[5] <- "accuracy"
 
 #######CHECK POINT######
 #This export all participant's raw data/responses, autoscore, reward trials for plotting and modeling purposes.
