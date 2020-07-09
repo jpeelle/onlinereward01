@@ -8,4 +8,5 @@
 * `randomise_blocks`: the block (of 4 sentences) to which a sentence was assigned (randomized in order across participants)
 * `sentencenum`: unique for each stimulus (i.e., item)
 * `soundfile`: stimulus played (redundant with `sentencenum`)
+* `rewardcue`: whether trial is rewarded ($$$) or not (0)
  
